@@ -128,18 +128,21 @@ mixin RxObjectMixin<T> on GetListenable<T> {
     return subscription;
   }
 
+  StreamSubscription<T>? _streamSubscription;
+
   /// Binds an existing `Stream<T>` to this Rx<T> to keep the values in sync.
   /// You can bind multiple sources to update the value.
   /// Closing the subscription will happen automatically when the observer
   /// Widget (`GetX` or `Obx`) gets unmounted from the Widget tree.
   void bindStream(Stream<T> stream) {
-    // final listSubscriptions =
-    //     _subscriptions[subject] ??= <StreamSubscription>[];
-
-    final StreamSubscription sub = stream.listen((va) => value = va);
-    reportAdd(sub.cancel);
+    _streamSubscription = stream.listen((va) => value = va);
+    reportAdd(_streamSubscription!.cancel);
   }
-}
+
+  /// Unbinds the stream subscription.
+  void unbindStream() {
+    _streamSubscription?.cancel();
+  }
 
 /// Base Rx class that manages all the stream logic for any Type.
 abstract class _RxImpl<T> extends GetListenable<T> with RxObjectMixin<T> {
